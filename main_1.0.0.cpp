@@ -47,11 +47,37 @@ int main()
         << Point(dimensions.width, dimensions.height) << Point(0, dimensions.height);
     doc << border;
 
+    Marker dcross( "mdcross", 10, 10, 5, 5, ViewBox(0, 0, 100, 100));
+    Path dcrossPath(Stroke(1, Color::Green));
+    dcrossPath << Point(0,0) 
+              << Point(10,10);
+    dcrossPath.startNewSubPath();
+    dcrossPath << Point(0,10) 
+              << Point(10,0);
+    dcross << dcrossPath;
+    doc << dcross;
+
+    Marker cross( "mcross", 10, 10, 5, 5, ViewBox(0, 0, 10, 10));
+    Path crossPath(Stroke(1, Color::Green));
+    crossPath << Point(5,2) 
+              << Point(5,8);
+    crossPath.startNewSubPath();
+    crossPath << Point(2,5) 
+              << Point(8,5);
+    cross << crossPath;
+    doc << cross;
+
+    Marker circleMarker("mcircle", 10, 10, 5, 5, ViewBox(0, 0, 10, 10));
+    circleMarker << Circle( Point(5, 5), 4, Fill(Color::Transparent), Stroke(.7, Color::Silver));
+    doc << circleMarker;
+
     // Long notation.  Local variable is created, children are added to varaible.
     LineChart chart(5.0);
     Polyline polyline_a(Stroke(.5, Color::Blue));
     Polyline polyline_b(Stroke(.5, Color::Aqua));
     Polyline polyline_c(Stroke(.5, Color::Fuchsia));
+
+    polyline_a.addMarker( "mcircle", Polyline::MarkerMid );
     polyline_a << Point(0, 0) << Point(10, 30)
         << Point(20, 40) << Point(30, 45) << Point(40, 44);
     polyline_b << Point(0, 10) << Point(10, 22)

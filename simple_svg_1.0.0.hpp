@@ -50,6 +50,12 @@ namespace svg
         ss << attribute_name << "=\"" << value << unit << "\" ";
         return ss.str();
     }
+    inline std::string attribute_url( std::string const &name, std::string const& url )
+    {
+        std::stringstream ss;
+        ss << name << "=\"url(#" << url << ")\" ";
+        return ss.str();
+    }
     inline std::string elemStart(std::string const & element_name)
     {
         return "\t<" + element_name + " ";
@@ -144,10 +150,15 @@ namespace svg
         Origin origin;
         Point origin_offset;
     };
+    static const Layout NullLayout( Dimensions(-1), Layout::BottomLeft, 1 );
 
     // Convert coordinates in user space to SVG native space.
     inline double translateX(double x, Layout const & layout)
     {
+        if( layout.dimensions.width < 0 )
+        {
+            return x;
+        }
         if (layout.origin == Layout::BottomRight || layout.origin == Layout::TopRight)
             return layout.dimensions.width - ((x + layout.origin_offset.x) * layout.scale);
         else
@@ -156,6 +167,10 @@ namespace svg
 
     inline double translateY(double y, Layout const & layout)
     {
+        if( layout.dimensions.height < 0 )
+        {
+            return y;
+        }
         if (layout.origin == Layout::BottomLeft || layout.origin == Layout::BottomRight)
             return layout.dimensions.height - ((y + layout.origin_offset.y) * layout.scale);
         else
@@ -509,6 +524,7 @@ namespace svg
     class Polyline : public Shape
     {
     public:
+        enum MarkerPos { MarkerStart, MarkerMid, MarkerEnd };
         Polyline(Fill const & fill = Fill(), Stroke const & stroke = Stroke())
             : Shape(fill, stroke) { }
         Polyline(Stroke const & stroke = Stroke()) : Shape(Color::Transparent, stroke) { }
@@ -520,6 +536,21 @@ namespace svg
             points.push_back(point);
             return *this;
         }
+        void addMarker( std::string name, MarkerPos pos )
+        {
+            switch( pos )
+            {
+                case MarkerStart:
+                markerStart = name;
+                break;
+                case MarkerMid:
+                markerMid = name;
+                break;
+                case MarkerEnd:
+                markerEnd = name;
+                break;
+            }
+        }
         std::string toString(Layout const & layout) const
         {
             std::stringstream ss;
@@ -530,7 +561,14 @@ namespace svg
                 ss << translateX(points[i].x, layout) << "," << translateY(points[i].y, layout) << " ";
             ss << "\" ";
 
-            ss << fill.toString(layout) << stroke.toString(layout) << emptyElemEnd();
+            ss << fill.toString(layout) << stroke.toString(layout);
+            if( !markerStart.empty())
+                ss << attribute_url("marker-start", markerStart );
+            if( !markerMid.empty())
+                ss << attribute_url("marker-mid", markerMid );
+            if( !markerEnd.empty())
+                ss << attribute_url("marker-end", markerEnd );
+            ss << emptyElemEnd();
             return ss.str();
         }
         void offset(Point const & offset)
@@ -541,6 +579,9 @@ namespace svg
             }
         }
         std::vector<Point> points;
+        std::string markerStart;
+        std::string markerMid;
+        std::string markerEnd;
     };
 
     class Text : public Shape
@@ -652,8 +693,61 @@ namespace svg
             for (unsigned i = 0; i < shifted_polyline.points.size(); ++i)
                 vertices.push_back(Circle(shifted_polyline.points[i], getDimensions()->height / 30.0, Color::Black));
 
-            return shifted_polyline.toString(layout) + vectorToString(vertices, layout);
+            return shifted_polyline.toString(layout);// + vectorToString(vertices, layout);
         }
+    };
+
+    struct ViewBox : public Serializeable
+    {
+        ViewBox(double x, double y, double width, double height ) : x(x), y(y), width(width), height(height) {}
+
+        std::string toString( Layout const& layout ) const
+        {
+            std::stringstream ss;
+            ss << x << " " << y << " " << width << " " << height;
+            return attribute( "viewBox", ss.str());
+        }
+        double x, y, width, height;
+    };
+
+    class Defs : public Serializeable
+    {
+    };
+
+    class Marker : public Defs
+    {
+    public:       
+        Marker( std::string const& name, double width, double height, double refX, double refY, ViewBox const& viewBox ) 
+        : name(name), width(width), height(height), refX(refX), refY(refY), viewBox(viewBox) {}
+
+        Marker operator<<(Shape const& shape)
+        {
+            content += shape.toString(NullLayout);
+            return *this;
+        }
+
+        std::string toString(Layout const & layout) const
+        {
+            std::stringstream ss;
+            ss << elemStart("marker")
+                << attribute("id", name )
+                << attribute("markerWidth", width )
+                << attribute("markerHeight", height )
+                << attribute("refX", refX )
+                << attribute("refY", refY )
+                << viewBox.toString( layout )
+                << ">\n" 
+                << content
+                << elemEnd("marker");
+            return ss.str();
+        }
+    private:
+
+        std::string name;
+        double width, height, refX, refY;
+        ViewBox viewBox;
+
+        std::string content;
     };
 
     class Document
@@ -667,6 +761,12 @@ namespace svg
             body_nodes_str_list.push_back(shape.toString(layout));
             return *this;
         }
+        Document & operator<<(Defs const & def)
+        {
+            defs_str_list.push_back(def.toString(layout));
+            return *this;
+        }
+
         std::string toString() const
         {
             std::stringstream ss;
@@ -693,6 +793,15 @@ namespace svg
                 << attribute("height", layout.dimensions.height, "px")
                 << attribute("xmlns", "http://www.w3.org/2000/svg")
                 << attribute("version", "1.1") << ">\n";
+
+            if( !defs_str_list.empty() ) {
+                str << elemStart("defs>\n");
+                for (const auto& defs_str : defs_str_list) {
+                    str << defs_str;
+                }
+                str << elemEnd("defs");
+            }
+
             for (const auto& body_node_str : body_nodes_str_list) {
                 str << body_node_str;
             }
@@ -704,6 +813,7 @@ namespace svg
         Layout layout;
 
         std::vector<std::string> body_nodes_str_list;
+        std::vector<std::string> defs_str_list;
     };
 }
 
