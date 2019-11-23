@@ -480,10 +480,10 @@ namespace svg
     class Path : public Shape
     {
     public:
-       Path(Fill const & fill = Fill(), Stroke const & stroke = Stroke())
-          : Shape(fill, stroke) 
+       Path(Fill const & fill = Fill(), Stroke const & stroke = Stroke(), bool closing = true )
+          : Shape(fill, stroke) , closing(closing)
        {  startNewSubPath(); }
-       Path(Stroke const & stroke = Stroke()) : Shape(Color::Transparent, stroke) 
+       Path(Stroke const & stroke = Stroke(), bool closing = true) : Shape(Color::Transparent, stroke), closing(closing)
        {  startNewSubPath(); }
        Path & operator<<(Point const & point)
        {
@@ -511,7 +511,10 @@ namespace svg
              ss << "M";
              for (auto const& point: subpath)
                 ss << translateX(point.x, layout) << "," << translateY(point.y, layout) << " ";
+
+            if( closing ) {
              ss << "z ";
+          }
           }
           ss << "\" ";
           ss << "fill-rule=\"evenodd\" ";
