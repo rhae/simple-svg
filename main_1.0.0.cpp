@@ -32,6 +32,12 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "simple_svg_1.0.0.hpp"
 
+#include <math.h>
+
+double deg2rad(double deg) {
+    return deg * M_PI / 180.0;
+}
+
 using namespace svg;
 
 // Demo page shows sample usage of the Simple SVG library.
@@ -58,7 +64,7 @@ int main()
     doc << dcross;
 
     Marker cross( "mcross", 10, 10, 5, 5, ViewBox(0, 0, 10, 10));
-    Path crossPath(Stroke(1, Color::Green));
+    Path crossPath(Stroke( .3, Color::Green));
     crossPath << Point(5,2) 
               << Point(5,8);
     crossPath.startNewSubPath();
@@ -77,9 +83,24 @@ int main()
     Polyline polyline_b(Stroke(.5, Color::Aqua));
     Polyline polyline_c(Stroke(.5, Color::Fuchsia));
 
+    polyline_a.addMarker( "mcircle", Polyline::MarkerStart );
     polyline_a.addMarker( "mcircle", Polyline::MarkerMid );
+    polyline_a.addMarker( "mcircle", Polyline::MarkerEnd );
+    
+    #if 0
     polyline_a << Point(0, 0) << Point(10, 30)
         << Point(20, 40) << Point(30, 45) << Point(40, 44);
+    #else
+    for( int i = 0; i < 360; ) {
+        polyline_a << Point( .1* i, 5*sin(deg2rad(i*2)) + 7 );
+        i+= 30;
+    }
+    #endif
+
+
+    polyline_b.addMarker( "mcross", Polyline::MarkerStart );
+    polyline_b.addMarker( "mcross", Polyline::MarkerMid );
+    polyline_b.addMarker( "mcross", Polyline::MarkerEnd );
     polyline_b << Point(0, 10) << Point(10, 22)
         << Point(20, 30) << Point(30, 32) << Point(40, 30);
     polyline_c << Point(0, 12) << Point(10, 15)
