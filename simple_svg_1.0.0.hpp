@@ -534,6 +534,7 @@ namespace svg
        }
     private:
        std::vector<std::vector<Point>> paths;
+       bool closing;
     };
 
     class Polyline : public Shape
