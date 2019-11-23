@@ -42,6 +42,8 @@ using namespace svg;
 
 // Demo page shows sample usage of the Simple SVG library.
 
+void createDebugGrid( svg::Document&, double, double );
+
 int main()
 {
     Dimensions dimensions(100, 100);
@@ -72,6 +74,8 @@ int main()
               << Point(8,5);
     cross << crossPath;
     doc << cross;
+
+    createDebugGrid( doc, 5, 10 );
 
     Marker circleMarker("mcircle", 10, 10, 5, 5, ViewBox(0, 0, 10, 10));
     circleMarker << Circle( Point(5, 5), 4, Fill(Color::Transparent), Stroke(.7, Color::Silver));
@@ -124,4 +128,28 @@ int main()
     doc << Rectangle(Point(70, 55), 20, 15, Color::Yellow);
 
     doc.save();
+}
+
+void createDebugGrid( svg::Document &doc, double smallWidth, double Width )
+{
+    Pattern patGridSm( "smallGrid", smallWidth, smallWidth, Pattern::userSpaceOnUse );
+    Path patGridSmPath( Stroke( .5, Color::Silver ), false);
+    patGridSmPath << Point( smallWidth, 0 )
+                  << Point( 0, 0 )
+                  << Point( 0, smallWidth );
+    patGridSm << patGridSmPath;
+
+    Pattern patGrid( "grid", Width, Width, Pattern::userSpaceOnUse );
+    Path patGridPath( Stroke( 1, Color::Silver ), false );
+    patGridPath << Point( 50, 0 )
+                << Point( 0, 0 )
+                << Point( 0, 50 );
+    patGrid << Rectangle( Point( 0, 0), Width, Width, Fill("smallGrid"));
+    patGrid << patGridPath;
+
+    doc << patGridSm;
+    doc << patGrid;
+
+    Rectangle baseGrid( Point(-1, -1), 100, 100, Fill("grid"));
+    doc << baseGrid;
 }

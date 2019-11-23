@@ -254,7 +254,7 @@ namespace svg
         {
             std::stringstream ss;
             if( url.empty()) {
-            ss << attribute("fill", color.toString(layout));
+                ss << attribute("fill", color.toString(layout));
             }
             else {
                 ss << attribute_url("fill", url);
@@ -288,7 +288,7 @@ namespace svg
         Color color;
         bool nonScaling;
     };
-
+    
     class Font : public Serializeable
     {
     public:
@@ -397,8 +397,8 @@ namespace svg
                 ss << attribute("y", translateY(edge.y, layout));
 
             ss << attribute("width", translateScale(width, layout))
-                << attribute("height", translateScale(height, layout))
-                << fill.toString(layout) << stroke.toString(layout) << emptyElemEnd();
+               << attribute("height", translateScale(height, layout))
+               << fill.toString(layout) << stroke.toString(layout) << emptyElemEnd();
             return ss.str();
         }
         void offset(Point const & offset)
@@ -513,8 +513,8 @@ namespace svg
                 ss << translateX(point.x, layout) << "," << translateY(point.y, layout) << " ";
 
             if( closing ) {
-             ss << "z ";
-          }
+                ss << "z ";
+            }
           }
           ss << "\" ";
           ss << "fill-rule=\"evenodd\" ";
@@ -767,6 +767,47 @@ namespace svg
 
         std::string name;
         double width, height, refX, refY;
+        ViewBox viewBox;
+
+        std::string content;
+    };
+
+    class Pattern : public Defs
+    {
+    public:
+        enum PatternUnits { objectBoundingBox, userSpaceOnUse };
+        Pattern( std::string const& name, double width, double height, PatternUnits patternUnits, ViewBox const& viewBox = EmptyViewBox ) 
+        : name(name), width(width), height(height), patternUnits(patternUnits), viewBox(viewBox) {}
+
+        Pattern operator<<(Shape const& shape)
+        {
+            content += shape.toString(NullLayout);
+            return *this;
+        }
+
+        std::string toString(Layout const & layout) const
+        {
+            std::stringstream ss;
+            ss << elemStart("pattern")
+                << attribute("id", name )
+                << attribute("width", width )
+                << attribute("height", height );
+
+            if( patternUnits != objectBoundingBox ) {
+                ss << attribute("patternUnits", "userSpaceOnUse" );
+            }
+
+            ss  << ">\n" 
+                << content
+                << "\t"
+                << elemEnd("pattern");
+            return ss.str();
+        }
+    private:
+
+        std::string name;
+        double width, height;
+        PatternUnits patternUnits;
         ViewBox viewBox;
 
         std::string content;
