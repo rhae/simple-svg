@@ -719,12 +719,17 @@ namespace svg
 
         std::string toString( Layout const& layout ) const
         {
+            if( width <0 && height < 0 )
+            {
+                return "";
+            }
             std::stringstream ss;
             ss << x << " " << y << " " << width << " " << height;
             return attribute( "viewBox", ss.str());
         }
         double x, y, width, height;
     };
+    static const ViewBox EmptyViewBox( -1, -1, -1, -1 );
 
     class Defs : public Serializeable
     {
