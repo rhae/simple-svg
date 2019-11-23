@@ -738,7 +738,7 @@ namespace svg
     class Marker : public Defs
     {
     public:       
-        Marker( std::string const& name, double width, double height, double refX, double refY, ViewBox const& viewBox ) 
+        Marker( std::string const& name, double width, double height, double refX, double refY, ViewBox const& viewBox = EmptyViewBox ) 
         : name(name), width(width), height(height), refX(refX), refY(refY), viewBox(viewBox) {}
 
         Marker operator<<(Shape const& shape)
@@ -759,6 +759,7 @@ namespace svg
                 << viewBox.toString( layout )
                 << ">\n" 
                 << content
+                << "\t"
                 << elemEnd("marker");
             return ss.str();
         }
