@@ -389,9 +389,14 @@ namespace svg
         std::string toString(Layout const & layout) const
         {
             std::stringstream ss;
-            ss << elemStart("rect") << attribute("x", translateX(edge.x, layout))
-                << attribute("y", translateY(edge.y, layout))
-                << attribute("width", translateScale(width, layout))
+            ss << elemStart("rect");
+
+            if( edge.x > 0 )
+                ss << attribute("x", translateX(edge.x, layout));
+            if( edge.y > 0 )
+                ss << attribute("y", translateY(edge.y, layout));
+
+            ss << attribute("width", translateScale(width, layout))
                 << attribute("height", translateScale(height, layout))
                 << fill.toString(layout) << stroke.toString(layout) << emptyElemEnd();
             return ss.str();
