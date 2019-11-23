@@ -249,14 +249,21 @@ namespace svg
         Fill(Color::Defaults color) : color(color) { }
         Fill(Color color = Color::Transparent)
             : color(color) { }
+        Fill( std::string const & url ) : url(url), color(Color::Transparent) {}
         std::string toString(Layout const & layout) const
         {
             std::stringstream ss;
+            if( url.empty()) {
             ss << attribute("fill", color.toString(layout));
+            }
+            else {
+                ss << attribute_url("fill", url);
+            }
             return ss.str();
         }
     private:
         Color color;
+        std::string url;
     };
 
     class Stroke : public Serializeable
