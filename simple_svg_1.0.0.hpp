@@ -477,6 +477,7 @@ namespace svg
         std::vector<Point> points;
     };
 
+    enum MarkerPosition { MarkerStart, MarkerMiddle, MarkerEnd };
     class Path : public Shape
     {
     public:
@@ -496,6 +497,11 @@ namespace svg
           if (paths.empty() || 0 < paths.back().size())
             paths.emplace_back();
        }
+
+       void addMarker( MarkerPosition pos, std::string name )
+        {
+            marker[pos] = name;
+        }
 
        std::string toString(Layout const & layout) const
        {
@@ -519,6 +525,13 @@ namespace svg
           ss << "\" ";
           ss << "fill-rule=\"evenodd\" ";
 
+          if( !marker[MarkerStart].empty())
+            ss << attribute_url("marker-start", marker[MarkerStart] );
+          if( !marker[MarkerMiddle].empty())
+            ss << attribute_url("marker-mid", marker[MarkerMiddle] );
+          if( !marker[MarkerEnd].empty())
+            ss << attribute_url("marker-end", marker[MarkerEnd] );
+
           ss << fill.toString(layout) << stroke.toString(layout) << emptyElemEnd();
           return ss.str();
        }
@@ -535,12 +548,13 @@ namespace svg
     private:
        std::vector<std::vector<Point>> paths;
        bool closing;
+       std::string marker[3];
     };
 
     class Polyline : public Shape
     {
     public:
-        enum MarkerPos { MarkerStart, MarkerMid, MarkerEnd };
+        
         Polyline(Fill const & fill = Fill(), Stroke const & stroke = Stroke())
             : Shape(fill, stroke) { }
         Polyline(Stroke const & stroke = Stroke()) : Shape(Color::Transparent, stroke) { }
@@ -552,21 +566,12 @@ namespace svg
             points.push_back(point);
             return *this;
         }
-        void addMarker( std::string name, MarkerPos pos )
+
+        void addMarker( MarkerPosition pos, std::string name )
         {
-            switch( pos )
-            {
-                case MarkerStart:
-                markerStart = name;
-                break;
-                case MarkerMid:
-                markerMid = name;
-                break;
-                case MarkerEnd:
-                markerEnd = name;
-                break;
+            marker[pos] = name;
             }
-        }
+
         std::string toString(Layout const & layout) const
         {
             std::stringstream ss;
@@ -578,12 +583,12 @@ namespace svg
             ss << "\" ";
 
             ss << fill.toString(layout) << stroke.toString(layout);
-            if( !markerStart.empty())
-                ss << attribute_url("marker-start", markerStart );
-            if( !markerMid.empty())
-                ss << attribute_url("marker-mid", markerMid );
-            if( !markerEnd.empty())
-                ss << attribute_url("marker-end", markerEnd );
+            if( !marker[MarkerStart].empty())
+                ss << attribute_url("marker-start", marker[MarkerStart] );
+            if( !marker[MarkerMiddle].empty())
+                ss << attribute_url("marker-mid", marker[MarkerMiddle] );
+            if( !marker[MarkerEnd].empty())
+                ss << attribute_url("marker-end", marker[MarkerEnd] );
             ss << emptyElemEnd();
             return ss.str();
         }
@@ -595,9 +600,7 @@ namespace svg
             }
         }
         std::vector<Point> points;
-        std::string markerStart;
-        std::string markerMid;
-        std::string markerEnd;
+        std::string marker[3];
     };
 
     class Text : public Shape

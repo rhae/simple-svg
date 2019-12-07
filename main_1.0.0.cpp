@@ -87,9 +87,9 @@ int main()
     Polyline polyline_b(Stroke(.5, Color::Aqua));
     Polyline polyline_c(Stroke(.5, Color::Fuchsia));
 
-    polyline_a.addMarker( "mcircle", Polyline::MarkerStart );
-    polyline_a.addMarker( "mcircle", Polyline::MarkerMid );
-    polyline_a.addMarker( "mcircle", Polyline::MarkerEnd );
+    polyline_a.addMarker( MarkerStart, "mcircle" );
+    polyline_a.addMarker( MarkerMiddle, "mcircle" );
+    polyline_a.addMarker( MarkerEnd, "mcircle" );
     
     #if 0
     polyline_a << Point(0, 0) << Point(10, 30)
@@ -97,14 +97,14 @@ int main()
     #else
     for( int i = 0; i < 360; ) {
         polyline_a << Point( .1* i, 5*sin(deg2rad(i*2)) + 7 );
-        i+= 30;
+        i+= 20;
     }
     #endif
 
 
-    polyline_b.addMarker( "mcross", Polyline::MarkerStart );
-    polyline_b.addMarker( "mcross", Polyline::MarkerMid );
-    polyline_b.addMarker( "mcross", Polyline::MarkerEnd );
+    polyline_a.addMarker( MarkerStart, "mcross" );
+    polyline_a.addMarker( MarkerMiddle, "mcross" );
+    polyline_a.addMarker( MarkerEnd, "mcross" );
     polyline_b << Point(0, 10) << Point(10, 22)
         << Point(20, 30) << Point(30, 32) << Point(40, 30);
     polyline_c << Point(0, 12) << Point(10, 15)
@@ -133,14 +133,14 @@ int main()
 void createDebugGrid( svg::Document &doc, double smallWidth, double Width )
 {
     Pattern patGridSm( "smallGrid", smallWidth, smallWidth, Pattern::userSpaceOnUse );
-    Path patGridSmPath( Stroke( .5, Color::Silver ), false);
+    Path patGridSmPath( Stroke( .1, Color::Silver ), false);
     patGridSmPath << Point( smallWidth, 0 )
                   << Point( 0, 0 )
                   << Point( 0, smallWidth );
     patGridSm << patGridSmPath;
 
     Pattern patGrid( "grid", Width, Width, Pattern::userSpaceOnUse );
-    Path patGridPath( Stroke( 1, Color::Silver ), false );
+    Path patGridPath( Stroke( .5, Color::Silver ), false );
     patGridPath << Point( 50, 0 )
                 << Point( 0, 0 )
                 << Point( 0, 50 );
